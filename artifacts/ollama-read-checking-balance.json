@@ -1,0 +1,202 @@
+{
+  "schema_version": "1.0",
+  "artifact_version": "1.0.0",
+  "name": "read_checking_balance_discovered",
+  "description": "Capability generated from a successful discovery run.",
+  "application": "mock-bank",
+  "surface_type": "browser",
+  "entry_point": "http://127.0.0.1:8000/",
+  "inputs": [
+    {
+      "name": "member_id",
+      "type": "string",
+      "description": "Fictional internal member identifier",
+      "required": true,
+      "sensitive": true
+    }
+  ],
+  "outputs": [
+    {
+      "name": "balance",
+      "type": "string",
+      "description": "Displayed checking-account balance",
+      "sensitive": true
+    }
+  ],
+  "allowed_hosts": [
+    "127.0.0.1",
+    "localhost"
+  ],
+  "steps": [
+    {
+      "id": "discovered-step-1",
+      "action": "fill",
+      "target": [
+        {
+          "strategy": "label",
+          "value": "Member ID",
+          "name": null,
+          "exact": true,
+          "priority": 1
+        }
+      ],
+      "value": "{{member_id}}",
+      "output_name": null,
+      "risk": "read_only",
+      "retry": {
+        "max_attempts": 1,
+        "delay_seconds": 0.25
+      },
+      "description": "Enter the member ID 12345 into the Member ID field."
+    },
+    {
+      "id": "discovered-step-2",
+      "action": "click",
+      "target": [
+        {
+          "strategy": "role",
+          "value": "button",
+          "name": "Search",
+          "exact": true,
+          "priority": 1
+        }
+      ],
+      "value": null,
+      "output_name": null,
+      "risk": "read_only",
+      "retry": {
+        "max_attempts": 1,
+        "delay_seconds": 0.25
+      },
+      "description": "Submit the search for Member ID 12345."
+    },
+    {
+      "id": "discovered-step-3",
+      "action": "extract",
+      "target": [
+        {
+          "strategy": "test_id",
+          "value": "checking-balance",
+          "name": null,
+          "exact": true,
+          "priority": 1
+        },
+        {
+          "strategy": "css",
+          "value": "tr[data-account-type='checking'] td:last-child",
+          "name": null,
+          "exact": true,
+          "priority": 2
+        }
+      ],
+      "value": null,
+      "output_name": "balance",
+      "risk": "read_only",
+      "retry": {
+        "max_attempts": 1,
+        "delay_seconds": 0.25
+      },
+      "description": "Extracting the current balance for the Checking account."
+    }
+  ],
+  "business_outcomes": [
+    {
+      "code": "member_not_found",
+      "locator": {
+        "strategy": "test_id",
+        "value": "member-not-found",
+        "name": null,
+        "exact": true,
+        "priority": 1
+      },
+      "message": "No member exists with the supplied identifier."
+    },
+    {
+      "code": "permission_denied",
+      "locator": {
+        "strategy": "test_id",
+        "value": "permission-denied",
+        "name": null,
+        "exact": true,
+        "priority": 1
+      },
+      "message": "The current operator is not permitted to view this member."
+    }
+  ],
+  "recovery_rules": [
+    {
+      "code": "session_expired",
+      "trigger": {
+        "strategy": "test_id",
+        "value": "session-expired",
+        "name": null,
+        "exact": true,
+        "priority": 1
+      },
+      "action": "click",
+      "target": [
+        {
+          "strategy": "role",
+          "value": "button",
+          "name": "Resume session",
+          "exact": true,
+          "priority": 1
+        }
+      ],
+      "message": "Resume the expired session",
+      "max_attempts": 1
+    },
+    {
+      "code": "transient_load_error",
+      "trigger": {
+        "strategy": "test_id",
+        "value": "transient-load-error",
+        "name": null,
+        "exact": true,
+        "priority": 1
+      },
+      "action": "click",
+      "target": [
+        {
+          "strategy": "role",
+          "value": "button",
+          "name": "Retry",
+          "exact": true,
+          "priority": 1
+        }
+      ],
+      "message": "Retry the transient application error",
+      "max_attempts": 1
+    },
+    {
+      "code": "known_interstitial",
+      "trigger": {
+        "strategy": "test_id",
+        "value": "known-interstitial",
+        "name": null,
+        "exact": true,
+        "priority": 1
+      },
+      "action": "click",
+      "target": [
+        {
+          "strategy": "role",
+          "value": "button",
+          "name": "Continue",
+          "exact": true,
+          "priority": 1
+        }
+      ],
+      "message": "Dismiss the known informational interstitial",
+      "max_attempts": 1
+    }
+  ],
+  "success_checkpoint": {
+    "strategy": "test_id",
+    "value": "member-details-heading",
+    "name": null,
+    "exact": true,
+    "priority": 1
+  },
+  "approval_status": "draft"
+}

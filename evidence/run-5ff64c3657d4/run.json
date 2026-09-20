@@ -1,0 +1,14 @@
+{
+  "status": "success",
+  "run_id": "run-5ff64c3657d4",
+  "outputs": {
+    "balance": "$500.00"
+  },
+  "recoveries": [
+    {
+      "step_id": "discovered-step-3",
+      "attempt": 1,
+      "reason": "transient_load_error"
+    }
+  ]
+}

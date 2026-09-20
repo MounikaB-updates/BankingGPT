@@ -1,0 +1,6 @@
+{
+  "status": "business_outcome",
+  "run_id": "run-cf0fea9050bd",
+  "code": "member_not_found",
+  "message": "No member exists with the supplied identifier."
+}

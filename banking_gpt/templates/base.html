@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}Northstar Core Banking{% endblock %}</title>
+    <style>
+      body { background: #d5d9df; color: #132238; font-family: Arial, sans-serif; margin: 0; }
+      header { background: #17365d; color: white; padding: 14px 24px; border-bottom: 5px solid #d2a94a; }
+      header h1 { font-size: 20px; margin: 0; }
+      nav { background: #e8ebef; border-bottom: 1px solid #9ba6b2; padding: 8px 24px; }
+      nav a { color: #17365d; margin-right: 20px; }
+      main { background: white; border: 1px solid #8e99a5; margin: 24px auto; max-width: 900px; padding: 24px; }
+      label { display: block; font-weight: bold; margin-bottom: 6px; }
+      input { border: 1px solid #586575; font-size: 16px; padding: 8px; width: 260px; }
+      button { background: #285b91; border: 1px solid #153b64; color: white; padding: 9px 18px; }
+      table { border-collapse: collapse; width: 100%; }
+      th, td { border: 1px solid #8895a3; padding: 10px; text-align: left; }
+      th { background: #e5eaf0; }
+      .message { border-left: 5px solid #b13a3a; background: #fff2f2; padding: 16px; }
+      .meta { color: #586575; font-size: 13px; }
+    </style>
+  </head>
+  <body>
+    <header><h1>Northstar Core Banking — Operator Portal</h1></header>
+    <nav><a href="/">Member Search</a><a href="#">Transactions</a><a href="#">Administration</a></nav>
+    <main>{% block content %}{% endblock %}</main>
+  </body>
+</html>
+

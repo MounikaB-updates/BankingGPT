@@ -1,0 +1,13 @@
+{
+  "status": "failure",
+  "run_id": "run-7e5d9f6f475f",
+  "code": "step_failed",
+  "message": "test_id:checking-balance matched 0; css:tr[data-account-type='checking'] td:last-child matched 0",
+  "failed_step": "discovered-step-3",
+  "expected": null,
+  "observed": null,
+  "evidence": {
+    "screenshot": "evidence/run-7e5d9f6f475f/screenshots/failure.png"
+  },
+  "can_intervene": true
+}

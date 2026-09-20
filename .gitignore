@@ -1,0 +1,27 @@
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.DS_Store
+
+# Keep local development runs out of the submission while retaining the curated set.
+evidence/run-*/
+!evidence/run-8370ae618658/
+!evidence/run-8370ae618658/**
+!evidence/run-a4a54ed6daf4/
+!evidence/run-a4a54ed6daf4/**
+!evidence/run-cf0fea9050bd/
+!evidence/run-cf0fea9050bd/**
+!evidence/run-de3d7789701e/
+!evidence/run-de3d7789701e/**
+!evidence/run-b868b3ec5d86/
+!evidence/run-b868b3ec5d86/**
+!evidence/run-5ff64c3657d4/
+!evidence/run-5ff64c3657d4/**
+!evidence/run-cadaaf034eed/
+!evidence/run-cadaaf034eed/**
+!evidence/run-7e5d9f6f475f/
+!evidence/run-7e5d9f6f475f/**
+!evidence/run-a33fd6b0ccae/
+!evidence/run-a33fd6b0ccae/**

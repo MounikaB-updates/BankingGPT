@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}Member Search{% endblock %}
+{% block content %}
+  <h2>Member Search</h2>
+  <p class="meta">Use the internal member identifier. Demo IDs: 12345, 67890.</p>
+  <form action="/members" method="get">
+    <label for="member-id">Member ID</label>
+    <input id="member-id" name="member_id" autocomplete="off" required>
+    <button type="submit">Search</button>
+  </form>
+{% endblock %}
+

@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}Member Details{% endblock %}
+{% block content %}
+  <h2 data-testid="member-details-heading">Member Details</h2>
+  <p><strong>Member ID:</strong> {{ member_id }}</p>
+  <p><strong>Name:</strong> {{ member.name }}</p>
+  <h3>Accounts</h3>
+  <table aria-label="Member accounts">
+    <thead><tr><th>Type</th><th>Account</th><th>Current Balance</th></tr></thead>
+    <tbody>
+      {% for account in member.accounts %}
+      <tr data-account-type="{{ account.type|lower }}">
+        <td>{{ account.type }}</td>
+        <td>{{ account.masked_number }}</td>
+        <td data-testid="{{ account.type|lower }}-balance">{{ account.balance }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% endblock %}
+

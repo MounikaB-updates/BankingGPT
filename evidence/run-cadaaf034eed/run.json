@@ -1,0 +1,14 @@
+{
+  "status": "success",
+  "run_id": "run-cadaaf034eed",
+  "outputs": {
+    "balance": "$777.77"
+  },
+  "recoveries": [
+    {
+      "step_id": "discovered-step-3",
+      "attempt": 1,
+      "reason": "known_interstitial"
+    }
+  ]
+}
