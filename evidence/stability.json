@@ -5,5 +5,12 @@
     "business_outcomes": 0,
     "failures": 0,
     "recoveries": 0
+  },
+  "lookup-member-profile": {
+    "runs": 1,
+    "successes": 1,
+    "business_outcomes": 0,
+    "failures": 0,
+    "recoveries": 0
   }
 }
