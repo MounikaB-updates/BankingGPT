@@ -13,6 +13,7 @@ The included target is a fictional legacy-style bank. It contains synthetic data
 - **DiscoveryEngine** runs the bounded observe-decide-act loop.
 - **ScriptedDiscoveryModel** supports offline development; **OllamaDiscoveryModel** performs local LLM discovery.
 - **PolicyEngine** applies host/action allowlists and risk approval rules before execution.
+- **Capability catalog API** lets another agent inspect typed contracts and invoke only approved artifacts.
 
 ## Setup
 
@@ -109,6 +110,63 @@ Expected outputs:
 Member `40800` first exercises bounded session-expiry recovery and then returns the expected business outcome `no_recent_transactions` instead of failing.
 
 To watch either new flow, add `--headed --slow-mo-ms 1200 --hold-open-seconds 10` to its replay command.
+
+### 4. Legacy iframe and tenant reuse
+
+The legacy demo places the entire banking workspace inside an iframe and uses intentionally old-fashioned table markup. Locator definitions carry an optional `frame` selector, so the replay engine—not workflow-specific code—crosses the iframe boundary.
+
+Run the canonical Northstar tenant:
+
+```bash
+uv run banking-gpt replay \
+  --artifact artifacts/read-checking-balance-legacy-iframe.json \
+  --member-id 12345
+```
+
+Reuse the same artifact for Harbor Bank. Its tenant override changes the entry point and frame selector while preserving the semantic steps and typed contract:
+
+```bash
+uv run banking-gpt replay \
+  --artifact artifacts/read-checking-balance-legacy-iframe.json \
+  --tenant harbor \
+  --member-id 67890
+```
+
+The verified results are `$1,250.00` for Northstar and `$93.18` for Harbor.
+
+## Agent-facing capability API
+
+Start the approval-gated catalog on port 8001:
+
+```bash
+uv run banking-gpt catalog-api
+```
+
+Inspect the catalog and its typed input/output contracts:
+
+```bash
+curl http://127.0.0.1:8001/capabilities
+curl http://127.0.0.1:8001/capabilities/read-checking-balance-legacy-iframe
+```
+
+Invoke an approved capability as an agent would:
+
+```bash
+curl -X POST \
+  http://127.0.0.1:8001/capabilities/read-checking-balance-legacy-iframe/invoke \
+  -H 'Content-Type: application/json' \
+  -d '{"inputs":{"member_id":"12345"},"tenant":"harbor"}'
+```
+
+Read accumulated execution quality:
+
+```bash
+curl http://127.0.0.1:8001/capabilities/read-checking-balance-legacy-iframe/stability
+```
+
+The API returns HTTP `409` for draft, under-review, or deprecated artifacts. Each accepted invocation still passes through input validation, tenant resolution, the policy engine, deterministic replay, and evidence capture. Stability metrics track runs, successes, business outcomes, failures, recoveries, and success rate.
+
+Values whose artifact definitions declare `sensitive: true` remain available in the direct caller response but are replaced with `[REDACTED]` in JSONL logs and saved results.
 
 Watch the browser actions in slow motion:
 

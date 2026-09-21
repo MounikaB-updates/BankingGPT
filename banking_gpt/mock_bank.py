@@ -65,6 +65,58 @@ async def home(request: Request) -> HTMLResponse:
     return templates.TemplateResponse(request=request, name="search.html")
 
 
+@app.get("/legacy/{tenant}", response_class=HTMLResponse)
+async def legacy_shell(request: Request, tenant: str) -> HTMLResponse:
+    if tenant not in {"northstar", "harbor"}:
+        return HTMLResponse("Unknown tenant", status_code=404)
+    return templates.TemplateResponse(
+        request=request,
+        name="legacy_shell.html",
+        context={
+            "tenant_name": "Northstar Credit Union" if tenant == "northstar" else "Harbor Bank",
+            "frame_id": "core-frame" if tenant == "northstar" else "banking-workspace",
+            "frame_src": f"/legacy/{tenant}/search",
+        },
+    )
+
+
+@app.get("/legacy/{tenant}/search", response_class=HTMLResponse)
+async def legacy_search(request: Request, tenant: str) -> HTMLResponse:
+    return templates.TemplateResponse(
+        request=request, name="legacy_search.html", context={"tenant": tenant}
+    )
+
+
+@app.get("/legacy/{tenant}/members")
+async def legacy_search_member(
+    tenant: str, member_id: str = Query(min_length=1)
+) -> RedirectResponse:
+    return RedirectResponse(url=f"/legacy/{tenant}/members/{member_id}", status_code=303)
+
+
+@app.get("/legacy/{tenant}/members/{member_id}", response_class=HTMLResponse)
+async def legacy_member_details(
+    request: Request, tenant: str, member_id: str
+) -> HTMLResponse:
+    member = MEMBERS.get(member_id)
+    if member is None:
+        return templates.TemplateResponse(
+            request=request,
+            name="legacy_message.html",
+            context={
+                "code": "member-not-found",
+                "heading": "Member not found",
+                "message": f"No member exists with ID {member_id}.",
+            },
+            status_code=404,
+        )
+    return templates.TemplateResponse(
+        request=request,
+        name="legacy_member.html",
+        context={"tenant": tenant, "member_id": member_id, "member": member},
+    )
+
+
 @app.get("/members")
 async def search_member(member_id: str = Query(min_length=1)) -> RedirectResponse:
     if member_id == "50000":

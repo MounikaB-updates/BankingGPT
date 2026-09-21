@@ -9,6 +9,7 @@ from urllib.parse import urlparse
 import typer
 import uvicorn
 
+from banking_gpt.catalog import app as catalog_app
 from banking_gpt.discovery import DiscoveryEngine, compile_balance_artifact, save_artifact
 from banking_gpt.evidence import EvidenceRecorder
 from banking_gpt.handoff import HandoffCoordinator
@@ -16,7 +17,7 @@ from banking_gpt.mock_bank import app as mock_bank_app
 from banking_gpt.models import ActionType, AutomationPolicy, Goal, RiskLevel, SurfaceType, Target
 from banking_gpt.policy import PolicyEngine
 from banking_gpt.providers import OllamaDiscoveryModel, ScriptedDiscoveryModel
-from banking_gpt.replay import ReplayEngine, load_artifact
+from banking_gpt.replay import ReplayEngine, apply_tenant_override, load_artifact
 from banking_gpt.surface import PlaywrightBrowserAdapter
 
 app = typer.Typer(help="Computer-use discovery and deterministic replay demo.")
@@ -47,6 +48,12 @@ def mock_bank(
 ) -> None:
     """Start the fictional legacy banking target."""
     uvicorn.run(mock_bank_app, host=host, port=port)
+
+
+@app.command("catalog-api")
+def catalog_api(host: str = "127.0.0.1", port: int = 8001) -> None:
+    """Serve the typed, approval-gated agent capability catalog."""
+    uvicorn.run(catalog_app, host=host, port=port)
 
 
 @app.command()
@@ -80,9 +87,12 @@ def replay(
     human_on_failure: Annotated[
         bool, typer.Option(help="Pause for manual control in the same headed browser")
     ] = False,
+    tenant: Annotated[
+        str, typer.Option(help="Optional tenant-specific artifact override")
+    ] = "",
 ) -> None:
     """Run a saved capability without an LLM."""
-    capability = load_artifact(artifact)
+    capability = apply_tenant_override(load_artifact(artifact), tenant or None)
     evidence = EvidenceRecorder()
     surface = PlaywrightBrowserAdapter(
         headless=not headed,

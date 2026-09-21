@@ -16,13 +16,31 @@ class EvidenceRecorder:
         self.screenshot_directory = self.directory / "screenshots"
         self.screenshot_directory.mkdir(parents=True, exist_ok=True)
         self.events_path = self.directory / "events.jsonl"
+        self._sensitive_values: set[str] = set()
+
+    def register_sensitive_values(self, values: Any) -> None:
+        for value in values:
+            if value is not None and str(value):
+                self._sensitive_values.add(str(value))
+
+    def _redact(self, value: Any) -> Any:
+        redacted = _redact_data(value)
+        if isinstance(redacted, str):
+            for sensitive in self._sensitive_values:
+                redacted = redacted.replace(sensitive, "[REDACTED]")
+            return redacted
+        if isinstance(redacted, dict):
+            return {key: self._redact(item) for key, item in redacted.items()}
+        if isinstance(redacted, list):
+            return [self._redact(item) for item in redacted]
+        return redacted
 
     def event(self, event_type: str, **data: Any) -> None:
         event = {
             "timestamp": datetime.now(UTC).isoformat(),
             "run_id": self.run_id,
             "event": event_type,
-            "data": _redact_data(data),
+            "data": self._redact(data),
         }
         with self.events_path.open("a", encoding="utf-8") as stream:
             stream.write(json.dumps(event, default=str) + "\n")
@@ -37,7 +55,7 @@ class EvidenceRecorder:
     def save_result(self, result: Any) -> None:
         payload = result.model_dump(mode="json") if hasattr(result, "model_dump") else result
         (self.directory / "run.json").write_text(
-            json.dumps(_redact_data(payload), indent=2, default=str) + "\n",
+            json.dumps(self._redact(payload), indent=2, default=str) + "\n",
             encoding="utf-8",
         )
 
@@ -50,4 +68,3 @@ def _redact_data(value: Any) -> Any:
     if isinstance(value, list):
         return [_redact_data(item) for item in value]
     return value
-

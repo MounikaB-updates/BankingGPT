@@ -1,0 +1,17 @@
+<!doctype html>
+<html lang="en">
+  <head><meta charset="utf-8"><title>Legacy Account Inquiry</title></head>
+  <body style="font-family: Courier New, monospace; background:#eee8cf; padding:24px">
+    <h2 data-testid="legacy-member-heading">ACCOUNT INQUIRY</h2>
+    <p>MEMBER: {{ member_id }} — {{ member.name }}</p>
+    <table border="1" cellpadding="8" width="100%">
+      <tr><th>ACCOUNT TYPE</th><th>ACCOUNT</th><th>CURRENT BALANCE</th></tr>
+      {% for account in member.accounts %}
+      <tr data-account-type="{{ account.type|lower }}">
+        <td>{{ account.type|upper }}</td><td>{{ account.masked_number }}</td>
+        <td{% if account.type == "Checking" %} data-testid="legacy-checking-balance"{% endif %}>{{ account.balance }}</td>
+      </tr>
+      {% endfor %}
+    </table>
+  </body>
+</html>

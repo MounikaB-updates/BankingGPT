@@ -17,6 +17,9 @@ All records use the fictional local banking application. Every run includes stru
 | Member profile: dormant | `run-1759e67126a5/` | returns `Jordan Sample` and `Dormant` |
 | Latest transaction | `run-3b75bc3035b3/` | navigates to transaction history and returns `Payroll deposit`, `+$2,400.00` |
 | No recent transactions | `run-c273c3b4c69b/` | recovers an expired session, then returns `business_outcome: no_recent_transactions` |
+| Legacy iframe: canonical tenant | `run-9fef7d781dda/` | crosses `#core-frame`, returns the balance, and redacts it from saved evidence |
+| Legacy iframe: Harbor override | `run-dbbb78d6ce49/` | reuses the artifact with a different entry point and `#banking-workspace` frame |
+| Agent catalog invocation | `run-10f40d7078b5/` | approved API invocation runs deterministic Harbor replay and records redacted evidence |
 
 The genuine discovery log contains `observation`, `model_action`, and `discovery_completed` events. The handoff log contains `intervention_requested`, `human_control_started`, `human_control_ended`, and `step_completed_after_handoff`, demonstrating that control returned to the same paused replay.
 

@@ -1,0 +1,49 @@
+{
+  "schema_version": "1.0",
+  "artifact_version": "1.0.0",
+  "name": "read_checking_balance_legacy_iframe",
+  "description": "Read a checking balance from a framed legacy core and reuse the flow across tenant variants.",
+  "application": "mock-legacy-bank",
+  "surface_type": "browser",
+  "entry_point": "http://127.0.0.1:8000/legacy/northstar",
+  "inputs": [
+    {"name": "member_id", "type": "string", "description": "Fictional member identifier", "required": true, "sensitive": true}
+  ],
+  "outputs": [
+    {"name": "balance", "type": "string", "description": "Displayed checking balance", "sensitive": true}
+  ],
+  "allowed_hosts": ["127.0.0.1", "localhost"],
+  "steps": [
+    {
+      "id": "enter-member-id", "action": "fill",
+      "target": [{"strategy": "label", "value": "Member Number", "exact": true, "priority": 1, "frame": "#core-frame"}],
+      "value": "{{member_id}}", "risk": "read_only", "description": "Enter the member number inside the legacy frame"
+    },
+    {
+      "id": "submit-search", "action": "click",
+      "target": [{"strategy": "role", "value": "button", "name": "Find Member", "exact": true, "priority": 1, "frame": "#core-frame"}],
+      "risk": "read_only", "description": "Submit the framed legacy search"
+    },
+    {
+      "id": "extract-checking-balance", "action": "extract",
+      "target": [{"strategy": "test_id", "value": "legacy-checking-balance", "exact": true, "priority": 1, "frame": "#core-frame"}],
+      "output_name": "balance", "risk": "read_only", "description": "Read the balance inside the legacy frame"
+    }
+  ],
+  "business_outcomes": [
+    {"code": "member_not_found", "locator": {"strategy": "test_id", "value": "member-not-found", "exact": true, "priority": 1, "frame": "#core-frame"}, "message": "No member exists with the supplied identifier."}
+  ],
+  "success_checkpoint": {"strategy": "test_id", "value": "legacy-member-heading", "exact": true, "priority": 1, "frame": "#core-frame"},
+  "tenant_overrides": {
+    "harbor": {
+      "entry_point": "http://127.0.0.1:8000/legacy/harbor",
+      "step_locators": {
+        "enter-member-id": [{"strategy": "label", "value": "Member Number", "exact": true, "priority": 1, "frame": "#banking-workspace"}],
+        "submit-search": [{"strategy": "role", "value": "button", "name": "Find Member", "exact": true, "priority": 1, "frame": "#banking-workspace"}],
+        "extract-checking-balance": [{"strategy": "test_id", "value": "legacy-checking-balance", "exact": true, "priority": 1, "frame": "#banking-workspace"}]
+      },
+      "success_checkpoint": {"strategy": "test_id", "value": "legacy-member-heading", "exact": true, "priority": 1, "frame": "#banking-workspace"}
+    }
+  },
+  "approval_status": "approved"
+}

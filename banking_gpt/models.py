@@ -56,6 +56,7 @@ class Locator(StrictModel):
     name: str | None = None
     exact: bool = True
     priority: int = Field(default=1, ge=1)
+    frame: str | None = None
 
 
 class InteractiveElement(StrictModel):
@@ -137,6 +138,12 @@ class RecoveryRule(StrictModel):
     max_attempts: int = Field(default=1, ge=1, le=3)
 
 
+class TenantOverride(StrictModel):
+    entry_point: str | None = None
+    step_locators: dict[str, list[Locator]] = Field(default_factory=dict)
+    success_checkpoint: Locator | None = None
+
+
 class CapabilityArtifact(StrictModel):
     schema_version: Literal["1.0"] = "1.0"
     artifact_version: str = "1.0.0"
@@ -152,7 +159,8 @@ class CapabilityArtifact(StrictModel):
     business_outcomes: list[OutcomeRule] = Field(default_factory=list)
     recovery_rules: list[RecoveryRule] = Field(default_factory=list)
     success_checkpoint: Locator
-    approval_status: Literal["draft", "approved"] = "draft"
+    tenant_overrides: dict[str, TenantOverride] = Field(default_factory=dict)
+    approval_status: Literal["draft", "under_review", "approved", "deprecated"] = "draft"
 
 
 class AutomationPolicy(StrictModel):

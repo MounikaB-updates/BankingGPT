@@ -177,17 +177,18 @@ class PlaywrightBrowserAdapter(SurfaceAdapter):
         raise TargetNotFound("; ".join(failures))
 
     def _to_playwright_locator(self, locator: Locator) -> PWLocator:
+        surface = self.page.frame_locator(locator.frame) if locator.frame else self.page
         if locator.strategy == LocatorStrategy.ROLE:
-            return self.page.get_by_role(
+            return surface.get_by_role(
                 locator.value, name=locator.name, exact=locator.exact
             )
         if locator.strategy == LocatorStrategy.LABEL:
-            return self.page.get_by_label(locator.value, exact=locator.exact)
+            return surface.get_by_label(locator.value, exact=locator.exact)
         if locator.strategy == LocatorStrategy.TEXT:
-            return self.page.get_by_text(locator.value, exact=locator.exact)
+            return surface.get_by_text(locator.value, exact=locator.exact)
         if locator.strategy == LocatorStrategy.TEST_ID:
-            return self.page.get_by_test_id(locator.value)
-        return self.page.locator(locator.value)
+            return surface.get_by_test_id(locator.value)
+        return surface.locator(locator.value)
 
     async def is_visible(self, locator: Locator, timeout_ms: int = 500) -> bool:
         try:

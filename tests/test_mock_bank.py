@@ -33,6 +33,20 @@ def test_no_recent_transactions_is_business_outcome() -> None:
     assert "no-recent-transactions" in response.text
 
 
+def test_legacy_tenant_shells_use_different_frame_ids() -> None:
+    northstar = client.get("/legacy/northstar")
+    harbor = client.get("/legacy/harbor")
+    assert 'id="core-frame"' in northstar.text
+    assert 'id="banking-workspace"' in harbor.text
+
+
+def test_legacy_member_page_is_rendered_inside_frame_route() -> None:
+    response = client.get("/legacy/northstar/members/12345")
+    assert response.status_code == 200
+    assert "legacy-checking-balance" in response.text
+    assert "$1,250.00" in response.text
+
+
 def test_member_not_found_is_explicit() -> None:
     response = client.get("/members/99999")
     assert response.status_code == 404

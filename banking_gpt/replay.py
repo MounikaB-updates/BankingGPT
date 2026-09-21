@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import re
+from copy import deepcopy
 from pathlib import Path
 from typing import Any
 from uuid import uuid4
@@ -39,6 +40,25 @@ def render_parameters(value: str | None, inputs: dict[str, Any]) -> str | None:
     return _PARAMETER.sub(replace, value)
 
 
+def apply_tenant_override(
+    artifact: CapabilityArtifact, tenant: str | None
+) -> CapabilityArtifact:
+    capability = deepcopy(artifact)
+    if not tenant:
+        return capability
+    override = capability.tenant_overrides.get(tenant)
+    if override is None:
+        raise ValueError(f"Unknown tenant override: {tenant}")
+    if override.entry_point:
+        capability.entry_point = override.entry_point
+    if override.success_checkpoint:
+        capability.success_checkpoint = override.success_checkpoint
+    for step in capability.steps:
+        if step.id in override.step_locators:
+            step.target = override.step_locators[step.id]
+    return capability
+
+
 class ReplayEngine:
     def __init__(self, surface: SurfaceAdapter, evidence: EvidenceRecorder) -> None:
         self.surface = surface
@@ -59,6 +79,11 @@ class ReplayEngine:
             entry_point=artifact.entry_point,
         )
         self._validate_inputs(artifact, inputs)
+        self.evidence.register_sensitive_values(
+            inputs[item.name]
+            for item in artifact.inputs
+            if item.sensitive and item.name in inputs
+        )
         self.evidence.event("replay_started", capability=artifact.name)
         await self.surface.start(target)
 
@@ -95,7 +120,7 @@ class ReplayEngine:
                     try:
                         value = await self.surface.execute(action)
                         if step.output_name:
-                            outputs[step.output_name] = value
+                            self._capture_output(artifact, outputs, step, value)
                         screenshot = self.evidence.screenshot_path(
                             f"step-{index + 1:02d}-{step.id}"
                         )
@@ -126,7 +151,7 @@ class ReplayEngine:
                         try:
                             value = await self.surface.execute(action)
                             if step.output_name:
-                                outputs[step.output_name] = value
+                                self._capture_output(artifact, outputs, step, value)
                             screenshot = self.evidence.screenshot_path(
                                 f"step-{index + 1:02d}-{step.id}-after-recovery"
                             )
@@ -157,7 +182,7 @@ class ReplayEngine:
                         try:
                             value = await self.surface.execute(action)
                             if step.output_name:
-                                outputs[step.output_name] = value
+                                self._capture_output(artifact, outputs, step, value)
                             screenshot = self.evidence.screenshot_path(
                                 f"step-{index + 1:02d}-{step.id}-after-handoff"
                             )
@@ -210,6 +235,22 @@ class ReplayEngine:
             output_name=step.output_name,
             explanation=step.description,
         )
+
+    def _capture_output(
+        self,
+        artifact: CapabilityArtifact,
+        outputs: dict[str, Any],
+        step: ArtifactStep,
+        value: Any,
+    ) -> None:
+        if not step.output_name:
+            return
+        outputs[step.output_name] = value
+        if any(
+            item.name == step.output_name and item.sensitive
+            for item in artifact.outputs
+        ):
+            self.evidence.register_sensitive_values([value])
 
     async def _detect_business_outcome(
         self, artifact: CapabilityArtifact

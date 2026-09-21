@@ -1,0 +1,9 @@
+{
+  "read-checking-balance-legacy-iframe": {
+    "runs": 1,
+    "successes": 1,
+    "business_outcomes": 0,
+    "failures": 0,
+    "recoveries": 0
+  }
+}

@@ -1,0 +1,16 @@
+<!doctype html>
+<html lang="en">
+  <head><meta charset="utf-8"><title>Legacy Member Search</title></head>
+  <body style="font-family: Courier New, monospace; background:#eee8cf; padding:24px">
+    <table border="1" cellpadding="10" width="100%">
+      <tr><th align="left">MEMBER INQUIRY — {{ tenant|upper }}</th></tr>
+      <tr><td>
+        <form action="/legacy/{{ tenant }}/members" method="get">
+          <label for="legacy-member-number">Member Number</label>
+          <input id="legacy-member-number" name="member_id" required>
+          <button type="submit">Find Member</button>
+        </form>
+      </td></tr>
+    </table>
+  </body>
+</html>

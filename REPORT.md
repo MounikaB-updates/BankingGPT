@@ -1,10 +1,10 @@
 # 1. Architecture
 
-The system is a modular Python application with domain contracts separated from infrastructure. A `SurfaceAdapter` defines observation and action operations; Playwright is the first concrete adapter. Discovery and deterministic replay share this adapter but differ in decision-making: an LLM proposes discovery actions, while replay interprets a validated artifact. FastAPI/Jinja2 provide a safe local legacy-style target. JSON/JSONL keeps the take-home implementation reviewable and avoids premature database or queue infrastructure.
+The system is a modular Python application with domain contracts separated from infrastructure. A `SurfaceAdapter` defines observation and action operations; Playwright is the first concrete adapter. Discovery and deterministic replay share this adapter but differ in decision-making: an LLM proposes discovery actions, while replay interprets a validated artifact. FastAPI/Jinja2 provide a safe local legacy-style target. A second FastAPI surface exposes typed capability discovery and approved invocation to calling agents. JSON/JSONL keeps the take-home implementation reviewable and avoids premature database or queue infrastructure.
 
 # 2. Artifact schema
 
-`CapabilityArtifact` is a strict, versioned Pydantic contract containing identity, typed inputs and outputs, application compatibility, allowed hosts, ordered steps, ranked locator candidates, retry policies, known business outcomes, a success checkpoint, and approval status. Invocation values use explicit placeholders such as `{{member_id}}`; raw discovery transcripts are not artifacts. Generated artifacts remain drafts until reviewed.
+`CapabilityArtifact` is a strict, versioned Pydantic contract containing identity, typed inputs and outputs, application compatibility, allowed hosts, ordered steps, ranked locator candidates, retry policies, known business outcomes, a success checkpoint, tenant overrides, and approval status. A locator may name an iframe boundary without changing the semantic action. Tenant overrides can replace the entry point, selected step locators, and checkpoint while preserving the canonical contract. Invocation values use explicit placeholders such as `{{member_id}}`; raw discovery transcripts are not artifacts. Generated artifacts remain drafts until reviewed, and the agent-facing API invokes only approved artifacts.
 
 # 3. Determinism & error handling
 
@@ -12,7 +12,7 @@ Replay never invokes a model. It validates the artifact and inputs, interpolates
 
 # 4. Heterogeneity & multi-tenant
 
-Browser-specific behavior is behind `SurfaceAdapter`; a desktop accessibility or screenshot/coordinate adapter can implement the same observation/action contract. Artifacts express semantic actions and surface-neutral workflow data, with surface-specific locator strategies kept as typed values. At scale, artifacts would identify a vendor product and compatible versions, while tenant profiles would supply entry points, branding metadata, and narrow locator overrides. Compatibility probes and replay health would gate unattended execution.
+Browser-specific behavior is behind `SurfaceAdapter`; a desktop accessibility or screenshot/coordinate adapter can implement the same observation/action contract. Artifacts express semantic actions and surface-neutral workflow data, with surface-specific locator strategies kept as typed values. The implemented legacy example crosses an iframe boundary, and one canonical capability runs against Northstar and Harbor variants by applying a narrow tenant override for the entry point and frame selector. At scale, artifacts would additionally identify vendor/product versions and run compatibility probes. Replay stability metrics and approval status would gate unattended execution.
 
 # 5. Escalation & handoff
 
@@ -20,7 +20,7 @@ Failures can emit an `InterventionRequest` containing run, capability, step, rea
 
 # 6. Safety
 
-The policy engine enforces allowed hosts and actions before execution, limits steps and time, and requires approval for irreversible actions. Pydantic rejects malformed model actions. Logs apply basic token/secret/identifier redaction, artifacts parameterize invocation values, and all included records are fictional. Production use would require institution-specific data classification, encryption, identity, retention, and audit controls beyond this demo.
+The policy engine enforces allowed hosts and actions before execution, limits steps and time, and requires approval for irreversible actions. Pydantic rejects malformed model actions. The catalog blocks any artifact not explicitly approved. Evidence applies pattern-based redaction plus exact-value redaction derived from artifact inputs and outputs marked `sensitive`; direct callers still receive their declared outputs. Artifacts parameterize invocation values, and all included records are fictional. Production use would require institution-specific data classification, encryption, identity, retention, and audit controls beyond this demo.
 
 # 7. Cuts
 
