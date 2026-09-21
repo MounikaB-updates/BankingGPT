@@ -1,0 +1,61 @@
+{
+  "schema_version": "1.0",
+  "artifact_version": "1.0.0",
+  "name": "read_latest_transaction",
+  "description": "Find a fictional member, open recent transactions, and return the latest description and amount.",
+  "application": "mock-bank",
+  "surface_type": "browser",
+  "entry_point": "http://127.0.0.1:8000/",
+  "inputs": [
+    {"name": "member_id", "type": "string", "description": "Fictional internal member identifier", "required": true, "sensitive": true}
+  ],
+  "outputs": [
+    {"name": "transaction_description", "type": "string", "description": "Latest transaction description", "sensitive": true},
+    {"name": "transaction_amount", "type": "string", "description": "Latest displayed transaction amount", "sensitive": true}
+  ],
+  "allowed_hosts": ["127.0.0.1", "localhost"],
+  "steps": [
+    {
+      "id": "enter-member-id", "action": "fill",
+      "target": [{"strategy": "label", "value": "Member ID", "exact": true, "priority": 1}],
+      "value": "{{member_id}}", "risk": "read_only", "description": "Enter the member identifier"
+    },
+    {
+      "id": "submit-search", "action": "click",
+      "target": [{"strategy": "role", "value": "button", "name": "Search", "exact": true, "priority": 1}],
+      "risk": "read_only", "description": "Submit the member search"
+    },
+    {
+      "id": "open-recent-transactions", "action": "click",
+      "target": [{"strategy": "role", "value": "link", "name": "Recent Transactions", "exact": true, "priority": 1}],
+      "risk": "read_only", "description": "Open the member transaction history"
+    },
+    {
+      "id": "extract-transaction-description", "action": "extract",
+      "target": [{"strategy": "test_id", "value": "latest-transaction-description", "exact": true, "priority": 1}],
+      "output_name": "transaction_description", "risk": "read_only", "description": "Read the latest transaction description"
+    },
+    {
+      "id": "extract-transaction-amount", "action": "extract",
+      "target": [{"strategy": "test_id", "value": "latest-transaction-amount", "exact": true, "priority": 1}],
+      "output_name": "transaction_amount", "risk": "read_only", "description": "Read the latest transaction amount"
+    }
+  ],
+  "business_outcomes": [
+    {"code": "member_not_found", "locator": {"strategy": "test_id", "value": "member-not-found", "exact": true, "priority": 1}, "message": "No member exists with the supplied identifier."},
+    {"code": "permission_denied", "locator": {"strategy": "test_id", "value": "permission-denied", "exact": true, "priority": 1}, "message": "The current operator is not permitted to view this member."},
+    {"code": "no_recent_transactions", "locator": {"strategy": "test_id", "value": "no-recent-transactions", "exact": true, "priority": 1}, "message": "The member has no transactions in the review period."}
+  ],
+  "recovery_rules": [
+    {
+      "code": "session_expired",
+      "trigger": {"strategy": "test_id", "value": "session-expired", "exact": true, "priority": 1},
+      "action": "click",
+      "target": [{"strategy": "role", "value": "button", "name": "Resume session", "exact": true, "priority": 1}],
+      "message": "Resume the expired session before opening transactions",
+      "max_attempts": 1
+    }
+  ],
+  "success_checkpoint": {"strategy": "test_id", "value": "transactions-heading", "exact": true, "priority": 1},
+  "approval_status": "approved"
+}

@@ -15,6 +15,22 @@ def test_member_details() -> None:
     response = client.get("/members/12345")
     assert response.status_code == 200
     assert "$1,250.00" in response.text
+    assert "Alex Example" in response.text
+    assert "Active" in response.text
+    assert "Recent Transactions" in response.text
+
+
+def test_recent_transactions() -> None:
+    response = client.get("/members/12345/transactions")
+    assert response.status_code == 200
+    assert "Payroll deposit" in response.text
+    assert "+$2,400.00" in response.text
+
+
+def test_no_recent_transactions_is_business_outcome() -> None:
+    response = client.get("/members/40800/transactions")
+    assert response.status_code == 200
+    assert "no-recent-transactions" in response.text
 
 
 def test_member_not_found_is_explicit() -> None:

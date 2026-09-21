@@ -13,34 +13,49 @@ templates = Jinja2Templates(directory=Path(__file__).parent / "templates")
 MEMBERS = {
     "12345": {
         "name": "Alex Example",
+        "status": "Active",
         "accounts": [
             {"type": "Checking", "masked_number": "•••• 1001", "balance": "$1,250.00"},
             {"type": "Savings", "masked_number": "•••• 2001", "balance": "$8,430.42"},
         ],
+        "transactions": [
+            {"date": "2026-09-18", "description": "Payroll deposit", "amount": "+$2,400.00"},
+            {"date": "2026-09-17", "description": "Utility payment", "amount": "-$146.22"},
+        ],
     },
     "67890": {
         "name": "Jordan Sample",
+        "status": "Dormant",
         "accounts": [
             {"type": "Checking", "masked_number": "•••• 1002", "balance": "$93.18"},
+        ],
+        "transactions": [
+            {"date": "2026-09-15", "description": "Card purchase", "amount": "-$28.45"},
         ],
     },
     "40800": {
         "name": "Casey Session",
+        "status": "Active",
         "accounts": [
             {"type": "Checking", "masked_number": "•••• 4080", "balance": "$408.00"},
         ],
+        "transactions": [],
     },
     "50000": {
         "name": "Taylor Retry",
+        "status": "Active",
         "accounts": [
             {"type": "Checking", "masked_number": "•••• 5000", "balance": "$500.00"},
         ],
+        "transactions": [],
     },
     "77777": {
         "name": "Morgan Dialog",
+        "status": "Active",
         "accounts": [
             {"type": "Checking", "masked_number": "•••• 7777", "balance": "$777.77"},
         ],
+        "transactions": [],
     },
 }
 
@@ -140,6 +155,37 @@ async def member_details(
     return templates.TemplateResponse(
         request=request,
         name="member.html",
+        context={"member_id": member_id, "member": member},
+    )
+
+
+@app.get("/members/{member_id}/transactions", response_class=HTMLResponse)
+async def member_transactions(request: Request, member_id: str) -> HTMLResponse:
+    member = MEMBERS.get(member_id)
+    if member is None:
+        return templates.TemplateResponse(
+            request=request,
+            name="message.html",
+            context={
+                "code": "member-not-found",
+                "heading": "Member not found",
+                "message": f"No member exists with ID {member_id}.",
+            },
+            status_code=404,
+        )
+    if not member["transactions"]:
+        return templates.TemplateResponse(
+            request=request,
+            name="message.html",
+            context={
+                "code": "no-recent-transactions",
+                "heading": "No recent transactions",
+                "message": "This member has no transactions in the review period.",
+            },
+        )
+    return templates.TemplateResponse(
+        request=request,
+        name="transactions.html",
         context={"member_id": member_id, "member": member},
     )
 

@@ -3,7 +3,8 @@
 {% block content %}
   <h2 data-testid="member-details-heading">Member Details</h2>
   <p><strong>Member ID:</strong> {{ member_id }}</p>
-  <p><strong>Name:</strong> {{ member.name }}</p>
+  <p><strong>Name:</strong> <span data-testid="member-name">{{ member.name }}</span></p>
+  <p><strong>Status:</strong> <span data-testid="member-status">{{ member.status }}</span></p>
   <h3>Accounts</h3>
   <table aria-label="Member accounts">
     <thead><tr><th>Type</th><th>Account</th><th>Current Balance</th></tr></thead>
@@ -17,5 +18,5 @@
       {% endfor %}
     </tbody>
   </table>
+  <p><a href="/members/{{ member_id }}/transactions">Recent Transactions</a></p>
 {% endblock %}
-

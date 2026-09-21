@@ -49,6 +49,67 @@ Run deterministic replay in terminal two:
 uv run banking-gpt replay --member-id 12345
 ```
 
+## Available capability flows
+
+All capability files are typed, parameterized JSON artifacts executed by the same deterministic replay engine. Each flow accepts a fictional `member_id`, enforces the host/action policy, captures evidence, and returns a structured result.
+
+### 1. Read checking balance
+
+Search for a member and return the checking-account balance:
+
+```bash
+uv run banking-gpt replay \
+  --artifact artifacts/read-checking-balance.json \
+  --member-id 12345
+```
+
+Expected outputs:
+
+```json
+{"balance": "$1,250.00"}
+```
+
+### 2. Look up member profile
+
+Search for a member and return their display name and membership status:
+
+```bash
+uv run banking-gpt replay \
+  --artifact artifacts/lookup-member-profile.json \
+  --member-id 12345
+```
+
+Expected outputs:
+
+```json
+{"member_name": "Alex Example", "member_status": "Active"}
+```
+
+Use member `67890` to demonstrate a different status (`Dormant`). Missing and restricted members still produce the shared `member_not_found` and `permission_denied` business outcomes.
+
+### 3. Read latest transaction
+
+Search for a member, open **Recent Transactions**, and return the latest transaction description and amount:
+
+```bash
+uv run banking-gpt replay \
+  --artifact artifacts/read-latest-transaction.json \
+  --member-id 12345
+```
+
+Expected outputs:
+
+```json
+{
+  "transaction_description": "Payroll deposit",
+  "transaction_amount": "+$2,400.00"
+}
+```
+
+Member `40800` first exercises bounded session-expiry recovery and then returns the expected business outcome `no_recent_transactions` instead of failing.
+
+To watch either new flow, add `--headed --slow-mo-ms 1200 --hold-open-seconds 10` to its replay command.
+
 Watch the browser actions in slow motion:
 
 ```bash

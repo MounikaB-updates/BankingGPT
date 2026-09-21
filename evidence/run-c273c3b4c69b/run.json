@@ -1,0 +1,6 @@
+{
+  "status": "business_outcome",
+  "run_id": "run-c273c3b4c69b",
+  "code": "no_recent_transactions",
+  "message": "The member has no transactions in the review period."
+}
